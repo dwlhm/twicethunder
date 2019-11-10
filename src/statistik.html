@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Firebase Basic Example</title>
+
+<script src="https://www.gstatic.com/firebasejs/6.6.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.6.2/firebase-firestore.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+<script>
+
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyD9JE0PToRBYGMtdlJnvcyVr6hV4hLrpjg",
+    authDomain: "tt000-57d7f.firebaseapp.com",
+    databaseURL: "https://tt000-57d7f.firebaseio.com",
+    projectId: "tt000-57d7f",
+    storageBucket: "tt000-57d7f.appspot.com",
+    messagingSenderId: "229476306931",
+    appId: "1:229476306931:web:8835d43339b6f8916c0c86",
+    measurementId: "G-N7KW1PV7NC"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+  var pH = [];
+  var beratSampah = [];
+  var date = [];
+  var statusSampah = [];
+    
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    canvas {
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      background: #fff;
+    }
+    #bodi {
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #fff;
+    }
+    #highlight {
+      border: 10px solid #fff;
+      border-radius: 10px;
+      box-shadow: 3px 5px 11px rgb(0,0,0,0.5);
+      padding: 10px 15px;
+    }
+  </style>
+</head>
+
+<body id='bodi'>
+<div id="loading"><svg width="90px"  height="90px"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-rolling" style="background: none;"><circle cx="50" cy="50" fill="none" ng-attr-stroke="{{config.color}}" ng-attr-stroke-width="{{config.width}}" ng-attr-r="{{config.radius}}" ng-attr-stroke-dasharray="{{config.dasharray}}" stroke="#6ac1a5" stroke-width="9" r="33" stroke-dasharray="155.50883635269477 53.83627878423159" transform="rotate(324 50 50)"><animateTransform attributeName="transform" type="rotate" calcMode="linear" values="0 50 50;360 50 50" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animateTransform></circle></svg></div>
+<div id="highlight">
+  <div id="statusSampah"></div>
+  <table>
+    <td>Kadar pH: <span id="pH"></span></td>
+    <td>Berat: <span id="beratSampah"></span>kg</td>
+  </table>
+  <div id="date"></div>
+</div>
+<div style="width: 100px;"></div>
+<div id="container" style="width: 50%;">
+  <canvas id="canvas"></canvas>
+</div>
+<script>
+  window.chartColors = {
+    red: 'rgb(255, 99, 132)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(54, 162, 235)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(201, 203, 207)'
+  };
+    var MONTHS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    var color = Chart.helpers.color;  
+
+    try {
+      var ref = db.collection("data");
+      ref.orderBy('date', 'desc').limit(10).get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            //console.log(`${doc.id} => ${String(doc.data().pH)}`);
+            pH.push(doc.data().pH);
+            beratSampah.push(doc.data().beratSampah);
+            date.push(doc.data().date.toDate());
+            statusSampah = doc.data().statusSampah;
+        });
+        if (statusSampah[0] == "PENUH") {
+          document.getElementById('highlight').style.borderColor = '#e74c3c';
+        } else if (statusSampah[0] == "KOSONG") {
+          document.getElementById('highlight').style.borderColor = '#16a085';
+        }
+        document.getElementById('pH').innerHTML = pH[0];
+        document.getElementById('beratSampah').innerHTML = beratSampah[0];
+        document.getElementById('statusSampah').innerHTML = statusSampah;
+        document.getElementById('date').innerHTML = date[0];
+              var barChartData = {
+      labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      datasets: [{
+        label: 'pH',
+        backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+        borderColor: window.chartColors.red,
+        borderWidth: 1,
+        data: [
+          pH[0],
+          pH[1],
+          pH[2],
+          pH[3],
+          pH[4],
+          pH[5],
+          pH[6],
+          pH[7],
+          pH[8],
+          pH[9]
+        ]
+      }, {
+        label: 'Berat',
+        backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+        borderColor: window.chartColors.blue,
+        borderWidth: 1,
+        data: [
+          beratSampah[0],
+          beratSampah[1],
+          beratSampah[2],
+          beratSampah[3],
+          beratSampah[4],
+          beratSampah[5],
+          beratSampah[6],
+          beratSampah[7],
+          beratSampah[8],
+          beratSampah[9]
+        ]
+      }]
+    };
+      var ctx = document.getElementById('canvas').getContext('2d');
+
+      
+         window.myBar = new Chart(ctx, {
+        type: 'bar',
+        data: barChartData,
+        options: {
+          responsive: true,
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Statistik'
+          }
+        }
+      });
+
+        document.getElementById('loading').style.display = 'none';
+
+      });
+    } catch (err) {
+      console.log(err);
+    }
+
+  
+window.onload = () => {
+
+  var datek = ["str"];
+  var sys = setInterval( () => {
+    try {
+      var ref = db.collection("data");
+      ref.orderBy('date', 'desc').limit(10).get().then((querySnapshot) => {
+        pH = [];
+            beratSampah = [];
+            statusSampah = [];
+            date = [];
+        querySnapshot.forEach((doc) => {
+            //console.log(`${doc.id} => ${String(doc.data().date.toDate()[0])}`);
+            
+            pH.push(doc.data().pH);
+            beratSampah.push(doc.data().beratSampah);
+            date.push(doc.data().date.toDate());
+            statusSampah.push(doc.data().statusSampah);
+        });
+        console.log(datek[0]);
+        console.log(String(datek[0]) !== String(date[0]));
+        if (String(datek[0]) !== String(date[0])) {
+          datek[0] = String(date[0]);
+          console.log(datek[0]);
+          if (statusSampah[0] == "PENUH") {
+            document.getElementById('highlight').style.borderColor = '#e74c3c';
+          } else if (statusSampah[0] == "KOSONG") {
+            document.getElementById('highlight').style.borderColor = '#16a085';
+          }
+          document.getElementById('pH').innerHTML = pH[0];
+          document.getElementById('beratSampah').innerHTML = beratSampah[0];
+          document.getElementById('statusSampah').innerHTML = statusSampah[0];
+          document.getElementById('date').innerHTML = date[0];
+          var barChartData = {
+          labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+          datasets: [{
+            label: 'pH',
+            backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+            borderColor: window.chartColors.red,
+            borderWidth: 1,
+            data: [
+              pH[0],
+              pH[1],
+              pH[2],
+              pH[3],
+              pH[4],
+              pH[5],
+              pH[6],
+              pH[7],
+              pH[8],
+              pH[9]
+            ]
+          }, {
+            label: 'Berat',
+            backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+            borderColor: window.chartColors.blue,
+            borderWidth: 1,
+            data: [
+              beratSampah[0],
+              beratSampah[1],
+              beratSampah[2],
+              beratSampah[3],
+              beratSampah[4],
+              beratSampah[5],
+              beratSampah[6],
+              beratSampah[7],
+              beratSampah[8],
+              beratSampah[9]
+            ]
+          }]
+        };
+        var ctx = document.getElementById('canvas').getContext('2d');
+        window.myBar = new Chart(ctx, {
+          type: 'bar',
+          data: barChartData,
+          options: {
+            responsive: true,
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Statistik'
+            }
+          }
+        });
+        document.getElementById('loading').style.display = 'none';
+      } else {
+        console.log("none");
+      }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  },1000);    
+}
+  </script>
+</body>
+
+</html>
